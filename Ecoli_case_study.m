@@ -34,9 +34,11 @@ S_2m_neg=0.5*(abs(S_2m)-S_2m);
 
 
 % mass flux
-[FBAV,~,~] = xlsread('DATA SET S1.xlsx','Core E. coli Model','C2:C191');
+% filePath = 'User/Data SET S1.xlsx'
+[FBAV,~,~] = xlsread(filePath,'DATA SET S1.xlsx','Core E. coli Model','C2:C191');
 % flux in Gluc: [FBAV,~,~] = xlsread('DATA SET S1.xlsx','Core E. coli Model','C2:C191');
 % flux in Gluc_lim: [FBAV,~,~] = xlsread('DATA SET S1.xlsx','Core E. coli Model','D2:D191');
+
 v=FBAV;
 v_2m = v; % depends on the FBA data
 
