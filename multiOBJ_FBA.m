@@ -172,12 +172,10 @@ yq9 = interp1(concentration(:,1),concentration(:,10),tq,'pchip');
 
 pp_pchip_gluc = pchip(tq,yq1);
 pp_pchip_fruc = pchip(tq,yq2);
-%pp_pchip_lac = pchip(tq,yq3);
 pp_pchip_ac = pchip(tq,yq3);
-%pp_pchip_bdo = pchip(tq,yq5);
 pp_pchip_acetoin = pchip(tq,yq4);
 pp_pchip_etoh = pchip(tq,yq5);
-pp_pchip_isoprop = pchip(tq,yq6);  %%%%%%
+pp_pchip_isoprop = pchip(tq,yq6); 
 pp_pchip_but = pchip(tq,yq7);
 pp_pchip_acetone = pchip(tq,yq8);
 pp_pchip_btoh = pchip(tq,yq9);
@@ -186,11 +184,9 @@ pp_pchip_btoh = pchip(tq,yq9);
 data(:,1) = tq(1:1000);
 data(:,2) = pp_pchip_gluc.coefs(:,3);
 data(:,3) = pp_pchip_fruc.coefs(:,3);
-% data(:,4) = pp_pchip_lac.coefs(:,3);
 data(:,4) = pp_pchip_ac.coefs(:,3);  
 data(:,5) =  pp_pchip_isoprop.coefs(:,3);
 data(:,6) = pp_pchip_acetoin.coefs(:,3);
-% data(:,8) = pp_pchip_bdo.coefs(:,3);
 data(:,7) = pp_pchip_btoh.coefs(:,3);
 data(:,8) = pp_pchip_but.coefs(:,3);
 data(:,9) = pp_pchip_etoh.coefs(:,3);
@@ -235,9 +231,9 @@ Cfruc(1,1) = C_fruc0;
 %Define fusion parameter
 f = 0.00664;  
 
-%% DMMM model with Multi-objective 
+%% DMMM model with Multi-objective in the second stage of optimization
 
-for k = 1:480
+for k = 1:498
     %Assign growth efficiency
     if k <104
         bm_eff_clj = 0.3;    
@@ -650,7 +646,7 @@ for k = 1:480
     modelJoint.lb(5034) = data(k,9); %ethanol
     modelJoint.lb(5011) = data(k,7); %butanol
 
-% multi-objective function derived from the integrated approach
+% multi-objective function derived from the criteria, normalized edge density of the proposed method
     if k < 80 
        f=[zeros(4984,1);0.14;0;0.3; 0 ;zeros(22,1);0.112;0.287;zeros(21,1);0.161;zeros(107,1)]';       
        modelJoint.lb(5012) =  0;  
@@ -667,7 +663,7 @@ for k = 1:480
 
     elseif k >= 170 && k<210  
         f=[zeros(4984,1);0.228; 0 ;0.192;0.151;zeros(22,1);0.192;0;zeros(21,1);0.237;zeros(107,1)]';
-
+%%%
     elseif k >= 210  && k<270 
         f=[zeros(4984,1);0.181;0;0.054;0;zeros(22,1);0.216;0;zeros(21,1);0.549;zeros(107,1)]';
     
@@ -705,15 +701,17 @@ for k = 1:480
         store_obj(k,2) =  FBA_multi (4985); %isopropanol
         store_obj(k,4) =  FBA_multi (5011); %butanol
         store_obj(k,6) =  FBA_multi (5034); %ethanol
+        store_obj(k,3) =  FBA_multi (4991); %actn
+        store_obj(k,5) =  FBA_multi (5012); %btoh
 
         if k == 1
-            for rr = 1:4
+            for rr = 1:6
                 dStore_obj(k,rr) = store_obj(k,rr)*dt;
                 Cstore_obj(k,rr) = C0(rr) + dStore_obj(k,rr);
                 Cstore_GL(k,rr) = Cstore_obj(k,rr) * MW(rr); %concentration g/L
             end
         else
-            for rr = 1:4
+            for rr = 1:6
                 dStore_obj(k,rr) = store_obj(k,rr)*dt;
                 Cstore_obj(k,rr) = Cstore_obj(k-1,rr) + dStore_obj(k,rr);
                 Cstore_GL(k,rr) = Cstore_obj(k,rr) * MW(rr); %concentration g/L
@@ -757,4 +755,3 @@ plot(xs,Cstore_GL(1:k,1))
 title('acetate')
 xlabel('Time (hr)')
 ylabel('Titer (g/L)')
-
