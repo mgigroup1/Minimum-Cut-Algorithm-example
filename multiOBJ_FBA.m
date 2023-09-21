@@ -646,37 +646,39 @@ for k = 1:498
     modelJoint.lb(5034) = data(k,9); %ethanol
     modelJoint.lb(5011) = data(k,7); %butanol
 
+
 % multi-objective function derived from the criteria, normalized edge density of the proposed method
     if k < 80 
-       f=[zeros(4984,1);0.14;0;0.3; 0 ;zeros(22,1);0.112;0.287;zeros(21,1);0.161;zeros(107,1)]';       
+       f=[zeros(4984,1);0.322515628;0;0.212682925; 0 ;zeros(22,1);0.242109178;0;zeros(21,1);0.222692268;zeros(107,1)]';       
        modelJoint.lb(5012) =  0;  
 
       elseif k >= 80  && k< 110  
-         f=[zeros(4984,1);0.078; 0 ;0.13; 0 ; zeros(22,1);0.128 ; 0.187 ;zeros(21,1);0.477;zeros(107,1)]';
+         f=[zeros(4984,1);0.433851914; 0 ;0.204848181; 0 ; zeros(22,1);0.209564125 ; 0 ;zeros(21,1);0.151735781;zeros(107,1)]';
     modelJoint.lb(5012) = data(k,8);
 
     elseif k >= 110  && k< 130   
-         f=[zeros(4984,1);0.047; 0 ;0.169; 0 ;zeros(22,1);0.073;0.179;zeros(21,1);0.532;zeros(107,1)]';
+         f=[zeros(4984,1);0.178746325; 0 ;0.163586604; 0 ;zeros(22,1);0.331370731;0;zeros(21,1);0.32629634;zeros(107,1)]';
 
     elseif k >= 130  && k< 170   
-         f=[zeros(4984,1);0.22; 0 ;0.164; 0.166 ; zeros(22,1);0.281; 0 ;zeros(21,1);0.169;zeros(107,1)]';
+         f=[zeros(4984,1);0.279914498; 0 ;0.147925459;0 ; zeros(22,1);0.338313876; 0 ;zeros(21,1);0.233846168;zeros(107,1)]';
 
     elseif k >= 170 && k<210  
-        f=[zeros(4984,1);0.228; 0 ;0.192;0.151;zeros(22,1);0.192;0;zeros(21,1);0.237;zeros(107,1)]';
+        f=[zeros(4984,1);0.13165412; 0 ;0.097601853;0;zeros(22,1);0.228344366;0;zeros(21,1);0.542399661;zeros(107,1)]';
 %%%
     elseif k >= 210  && k<270 
-        f=[zeros(4984,1);0.181;0;0.054;0;zeros(22,1);0.216;0;zeros(21,1);0.549;zeros(107,1)]';
+        f=[zeros(4984,1);0.287511697;0;0.145856558;0;zeros(22,1);0.276848031;0;zeros(21,1);0.289783714;zeros(107,1)]';
     
     elseif k >= 270 && k<310  
-        f=[zeros(4984,1);0.588;0;0.03;0;zeros(22,1);0.268;0;zeros(21,1);0.114;zeros(107,1)]';
+        f=[zeros(4984,1);0.317222;0;0.197370141;0;zeros(22,1);0.21185274;0;zeros(21,1);0.273555119;zeros(107,1)]';
 
     elseif k >= 310 && k<323 
-        f=[zeros(4984,1);0.216;0;0.159;0;zeros(22,1);0.243;0;zeros(21,1);0.382;zeros(107,1)]';
+        f=[zeros(4984,1);0.270834988;0;0.264893225;0;zeros(22,1);0.224754696;0;zeros(21,1);0.23951709;zeros(107,1)]';
 
     else k >= 323 
-        f=[zeros(4984,1);0.216;0;0.159;0;zeros(22,1);0.243;0;zeros(21,1);0.382;zeros(107,1)]';
+        f=[zeros(4984,1);0.274815945;0;0.289143164;0;zeros(22,1);0.205565663;0;zeros(21,1);0.230475227;zeros(107,1)]';
 
     end
+
 
     %Estimate fermentation yields
     % inequality
@@ -755,3 +757,4 @@ plot(xs,Cstore_GL(1:k,1))
 title('acetate')
 xlabel('Time (hr)')
 ylabel('Titer (g/L)')
+
