@@ -8,3 +8,4 @@ and supplemental MATLAB codes for running the graph-based analysis simulations d
 1. The Sankey diagrams for the E. coli case study, Gluc condition: download the files of node_names.csv; node_values_lim.csv; sankey_plot_Ecoli.py; DATA SET S1.xlsx
 2. The predicted profiles for the co-culture system case study: download the files of singleOBJ_FBA.m, multiOBJ_FBA.m, Cac_Clj_MultiFBA_example.mat
 3. The Ecoli_case_study.m file demonstrates the case study of Ecoli, including the construction of the flux-dependent graph & application of the min-cut algorithm & criteria of edge density. Download ECOLI_example.mat file and load data before running.
+4. To generate the weights for the multi-obj FBA, using file: FBA_V.mat and mc_plot_coculture.m to generate min-cut fulx dependent graph and calculate the edge density. The final normalized weights see DATA SET S1.xlsx.
