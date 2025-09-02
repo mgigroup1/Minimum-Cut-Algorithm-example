@@ -1,374 +1,153 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2636
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Bold;\f1\froman\fcharset0 Times-Roman;\f2\fmodern\fcharset0 Courier;
-\f3\fswiss\fcharset0 Helvetica;\f4\fnil\fcharset0 LucidaGrande;\f5\ftech\fcharset77 Symbol;
-\f6\froman\fcharset0 Times-Italic;}
-{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
-{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
-{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid1\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid1}
-{\list\listtemplateid2\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat3\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid101\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid102\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid2}
-{\list\listtemplateid3\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}}{\leveltext\leveltemplateid201\'01\'00;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid202\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{square\}}{\leveltext\leveltemplateid203\'01\uc0\u9642 ;}{\levelnumbers;}\fi-360\li2160\lin2160 }{\listname ;}\listid3}
-{\list\listtemplateid4\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid301\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{circle\}}{\leveltext\leveltemplateid302\'01\uc0\u9702 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid4}}
-{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}{\listoverride\listid4\listoverridecount0\ls4}}
-\margl1440\margr1440\vieww15520\viewh8400\viewkind0
-\deftab720
-\pard\pardeftab720\sa298\partightenfactor0
+How to Run
+	1	Clone/download the repository and place .m and .mat files in the same folder.
+	2	In MATLAB:
+>> (copy below lines)
+initCobraToolbox(false);
+changeCobraSolver('gurobi','LP');  % or 'glpk'
+load Cac_Clj_MuliFBA_example
+run('multi_obj_fba_coculture.m');
 
-\f0\b\fs36 \cf0 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 How to Run\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls1\ilvl0
-\f1\b0\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Clone/download the repository and place 
-\f2\fs26 .m
-\f1\fs24  and 
-\f2\fs26 .mat
-\f1\fs24  files in the same folder.\
-\ls1\ilvl0\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 In MATLAB:\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+	3	The script will:
+	◦	Preprocess OD600 and concentration data
+	◦	Estimate growth rates for Cac, Clj, and co-culture
+	◦	Integrate cell fusion ODEs
+	◦	Run multi-objective FBA per time step
+	◦	Plot predicted vs. experimental titers for key products
+Model Structure
+The simulation proceeds in six main stages:
+	1	Data Preprocessing
+	◦	Convert genome copy ratio → relative abundances
+	◦	Interpolate OD600 to uniform time grid
+	◦	Compute time-dependent growth rates (mu1, mu2, mu3)
+	2	Cell Fusion ODE Integration
+	◦	12-state ODE system models transitions between non-hybrid and hybrid cells
+	◦	Integrated in 0.1 h steps using ode45
+	3	Experimental Data Interpolation
+	◦	Interpolate extracellular metabolite concentrations
+	◦	Extract cubic polynomial coefficients for uptake/production profiles
+	4	Species & Reaction Index Mapping
+	◦	Define species list, substrate partition indices, product reaction IDs
+	◦	Map molecular weights for titer conversion
+	5	Main Simulation Loop
+	◦	For each time step:
+	▪	Run FBA for each species (pure & hybrid)
+	▪	Block irrelevant reactions to isolate species
+	▪	Set uptake bounds based on relative abundance
+	▪	Set NGAM (ATPM) proportional to abundance
+	▪	Capture growth rates, uptake rates, gas cross-feeding
+	▪	Construct and solve multi-objective LP via linprog
+	▪	Integrate product fluxes to cumulative titers
+	6	Plotting
+	◦	Generate 4 subplots comparing predicted and experimental titers for:
+	▪	Isopropanol
+	▪	Butanol
+	▪	Ethanol
+	▪	Acetate
 
-\f3 \cf0 >> (copy below lines)\
-initCobraToolbox(false);\
-changeCobraSolver('gurobi','LP');  % or 'glpk'\
-load Cac_Clj_MuliFBA_example\
-run('multi_obj_fba_coculture.m');\
-\kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls2\ilvl0
-\f1 \cf0 {\listtext	3	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 The script will:\
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls2\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Preprocess OD600 and concentration data\
-\ls2\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Estimate growth rates for Cac, Clj, and co-culture\
-\ls2\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Integrate cell fusion ODEs\
-\ls2\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Run multi-objective FBA per time step\
-\ls2\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Plot predicted vs. experimental titers for key products\
-\pard\pardeftab720\sa298\partightenfactor0
+Customization
+	•	Change products: Edit rxnsList, rxn_index, MW
+	•	Change objectives:
+	◦	Single-objective: uncomment the “single objective case” block
+	◦	Multi-objective: modify weights f in time windows
+	•	Change organisms: Update species list and all related index mappings
+	•	Experimental data: Replace concentration and OD data with your own
 
-\f0\b\fs36 \cf0 \strokec2 Model Structure\
-\pard\pardeftab720\sa240\partightenfactor0
 
-\f1\b0\fs24 \cf0 \strokec2 The simulation proceeds in 
-\f0\b six main stages
-\f1\b0 :\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	1	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Data Preprocessing
-\f1\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls3\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Convert genome copy ratio 
-\f5 \uc0\u8594 
-\f1  relative abundances\
-\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Interpolate OD600 to uniform time grid\
-\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Compute time-dependent growth rates (
-\f2\fs26 mu1
-\f1\fs24 , 
-\f2\fs26 mu2
-\f1\fs24 , 
-\f2\fs26 mu3
-\f1\fs24 )\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	2	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Cell Fusion ODE Integration
-\f1\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls3\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 12-state ODE system models transitions between non-hybrid and hybrid cells\
-\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Integrated in 0.1 h steps using 
-\f2\fs26 ode45
-\f1\fs24 \
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	3	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Experimental Data Interpolation
-\f1\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls3\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Interpolate extracellular metabolite concentrations\
-\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Extract cubic polynomial coefficients for uptake/production profiles\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	4	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Species & Reaction Index Mapping
-\f1\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls3\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Define species list, substrate partition indices, product reaction IDs\
-\ls3\ilvl1\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Map molecular weights for titer conversion\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	5	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Main Simulation Loop
-\f1\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls3\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 For each time step:\
-\pard\tx1660\tx2160\pardeftab720\li2160\fi-2160\sa240\partightenfactor0
-\ls3\ilvl2\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Run 
-\f0\b FBA
-\f1\b0  for each species (pure & hybrid)\
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Block irrelevant reactions to isolate species\
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Set uptake bounds based on relative abundance\
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Set NGAM (ATPM) proportional to abundance\
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Capture growth rates, uptake rates, gas cross-feeding\
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Construct and solve 
-\f0\b multi-objective LP
-\f1\b0  via 
-\f2\fs26 linprog
-\f1\fs24 \
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Integrate product fluxes to cumulative titers\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls3\ilvl0
-\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	6	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Plotting
-\f1\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls3\ilvl1\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9702 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Generate 4 subplots comparing predicted and experimental titers for:\
-\pard\tx1660\tx2160\pardeftab720\li2160\fi-2160\sa240\partightenfactor0
-\ls3\ilvl2\cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Isopropanol\
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Butanol\
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Ethanol\
-\ls3\ilvl2\kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4 \uc0\u9642 
-\f1 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Acetate\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 
-\f3 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
-\pard\pardeftab720\sa298\partightenfactor0
+README: Pseudocode
 
-\f0\b\fs36 \cf0 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Customization\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls4\ilvl0
-\fs24 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Change products:
-\f1\b0  Edit 
-\f2\fs26 rxnsList
-\f1\fs24 , 
-\f2\fs26 rxn_index
-\f1\fs24 , 
-\f2\fs26 MW
-\f1\fs24 \
-\ls4\ilvl0
-\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Change objectives:
-\f1\b0 \
-\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\sa240\partightenfactor0
-\ls4\ilvl1
-\f6\i \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4\i0 \uc0\u9702 
-\f6\i 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Single-objective:
-\f1\i0  uncomment the \'93single objective case\'94 block\
-\ls4\ilvl1
-\f6\i \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	
-\f4\i0 \uc0\u9702 
-\f6\i 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Multi-objective:
-\f1\i0  modify weights 
-\f2\fs26 f
-\f1\fs24  in time windows\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa240\partightenfactor0
-\ls4\ilvl0
-\f0\b \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Change organisms:
-\f1\b0  Update 
-\f2\fs26 species
-\f1\fs24  list and all related index mappings\
-\ls4\ilvl0
-\f0\b \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 Experimental data:
-\f1\b0  Replace 
-\f2\fs26 concentration
-\f1\fs24  and OD data with your own\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+LOAD data and community model (modelJoint) from example .mat
 
-\f3 \cf0 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
-\
-\
-\pard\pardeftab720\partightenfactor0
+# --- Data preprocessing ---
+Compute relative abundance from genome copy ratio
+Interpolate OD600 to a regular time grid tq
+Estimate time-dependent growth rates mu1, mu2, mu3 for (Cac, Clj, Co-culture)
+Clip/limit growth rates to avoid spikes
+Initialize storage arrays
 
-\f0\b\fs36 \cf0 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec2 README: Pseudocode\
+# --- Cell fusion ODE integration (0.1 hr steps) ---
+Define fusion rate f and convert it to per-cell units
+For each time step i = 1..631:
+    Set initial state x0 (first step) or use previous solution
+    Define ODE g(t,x) describing:
+        - growth of non-hybrid Cac & Clj
+        - fusion terms to hybrid states
+        - cascaded state tracking (x1..x12)
+    Integrate g over [t_{i-1}, t_i] with ode45
+    Append state to fullx, time to fullt
 
-\f3\b0\fs24 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 LOAD data and community model (modelJoint) from example .mat\
-\
-# --- Data preprocessing ---\
-Compute relative abundance from genome copy ratio\
-Interpolate OD600 to a regular time grid tq\
-Estimate time-dependent growth rates mu1, mu2, mu3 for (Cac, Clj, Co-culture)\
-Clip/limit growth rates to avoid spikes\
-Initialize storage arrays\
-\
-# --- Cell fusion ODE integration (0.1 hr steps) ---\
-Define fusion rate f and convert it to per-cell units\
-For each time step i = 1..631:\
-    Set initial state x0 (first step) or use previous solution\
-    Define ODE g(t,x) describing:\
-        - growth of non-hybrid Cac & Clj\
-        - fusion terms to hybrid states\
-        - cascaded state tracking (x1..x12)\
-    Integrate g over [t_\{i-1\}, t_i] with ode45\
-    Append state to fullx, time to fullt\
-\
-Compress (fullt, fullx) to unique time grid (pullt, pullx)\
-Interpolate species states to tq 
-\f4 \uc0\u8594 
-\f3  XX\
-Normalize rows to fractions 
-\f4 \uc0\u8594 
-\f3  X\
-Reorder columns to keep "Clj pure" last (matches later indexing)\
-\
-# --- Concentration interpolation (experimental curves) ---\
-Interpolate measured extracellular concentrations over tq 
-\f4 \uc0\u8594 
-\f3  yq1..yq9\
-Build piecewise polynomials (pchip) and extract cubic terms\
-Assemble 'data' matrix with per-time uptake/production coefficients\
-\
-Define species lists and indices for partitioning substrate uptake:\
-    species = \{Cacpure, Cacfused, Cljfused, ..., Cljpure\}\
-    Cacpureind, Cljpureind, Cacfusedind, Cljfusedind\
-\
-Initialize initial concentrations C0 for key products (acetate, IPA, etc.)\
-Define rxnsList, rxn indices, molecular weights MW\
-\
-# --- Main simulation loop over time k ---\
-For k = 1..498:\
-    Set biomass efficiencies (bm_eff_cac, bm_eff_clj) by phase\
-    Read total glucose/fructose uptake from 'data(k,...)' into ut\
-    Compute 'frac' = species-weighted partition factors\
-    Reset ATP-use aggregators (CACfused_ATPuse, CLJfused_ATPuse)\
-\
-    # Per-species FBA blocks\
-    For each species i in species list:\
-        LOAD model.mat (fresh modelJoint)\
-        Set species-specific uptake bounds (glucose/fructose) based on X(k,i) and ut\
-        Zero out all other species' reactions (block bounds)\
-        Set NGAM (ATPM) proportional to species abundance X(k,i)\
-        Choose species-specific objective:\
-            - Cacpure: 'CacpureEx_cpd11416_norm2[u]' (biomass proxy)\
-            - Cljpure: 'CljpureBIOMASS_Cl_DSM_WT_46p666M1'\
-            - Cacfused: 'CacfusedEx_cpd11416_norm2[u]'\
-            - Cljfused: 'CljfusedBIOMASS_Cl_DSM_WT_46p666M1'\
-        Optimize (maximize) to get growth FBA.f and uptake fluxes\
-        Save mu(k,i), gluc_flux(k,i), fruc_flux(k,i)\
-        For Cacpure, also compute max H2/CO2 export ranges\
-        Accumulate hybrid ATPM (for multi-objective step later)\
-\
-    # Aggregate cross-feeding for hybrid states (Cac fused, Clj fused)\
-    If total Cac-hybrid mu > 0:\
-        Rebuild model with only Cacfused reactions active\
-        Plug aggregated uptake bounds and ATPM\
-        Maximize Cacfused growth; set a min growth bound (99% max)\
-        Maximize ExCom_h2[u] and ExCom_co2[u], accumulate into h2_store_var, co2_store_var\
-    If total Clj-hybrid mu > 0:\
-        Rebuild model with only Cljfused reactions active\
-        Similar steps; accumulate H2/CO2 uptake\
-\
-    # Community-level constraints\
-    LOAD model.mat\
-    Set community glucose/fructose lower bounds = sum of species uptake\
-    Set organism-level uptake LBs from gluc_flux/fruc_flux\
-    Enforce min growth (99% of each species' previous max)\
-    Apply hybrid min growth if applicable\
-    Block any species groups with zero abundance\
-    Apply cross-feeding: set Clj H2/CO2 uptake lower bounds = -stored totals\
-    Set NGAM (ATPM) for each active group (pure + fused)\
-    Force certain exchange fluxes to match experimental rates from 'data(k,...)' (isopropanol, acetate, acetoin, ethanol, butanol, acetone)\
-\
-    # Multi-objective vector f (time-phase dependent weights)\
-    Build f (length = number of reactions) with nonzeros on selected product exports\
-    (weights vary by time window)\
-\
-    # Solve LP (multi-objective as weighted-sum)\
-    Convert S, lb, ub to (Aeq,b,lb,ub), solve: min f\'b7v  subject to S*v=b\
-    v* = linprog(...)\
-    If feasible:\
-        Store product fluxes from v*(rxn_indices)\
-        Integrate over dt to get cumulative concentrations (mol and g/L)\
-\
-# --- Plot predicted vs experimental titers ---\
-Make 4 subplots (IPA, BuOH, EtOH, Acetate), experimental points + model curves\
-\
-}
+Compress (fullt, fullx) to unique time grid (pullt, pullx)
+Interpolate species states to tq → XX
+Normalize rows to fractions → X
+Reorder columns to keep "Clj pure" last (matches later indexing)
+
+# --- Concentration interpolation (experimental curves) ---
+Interpolate measured extracellular concentrations over tq → yq1..yq9
+Build piecewise polynomials (pchip) and extract cubic terms
+Assemble 'data' matrix with per-time uptake/production coefficients
+
+Define species lists and indices for partitioning substrate uptake:
+    species = {Cacpure, Cacfused, Cljfused, ..., Cljpure}
+    Cacpureind, Cljpureind, Cacfusedind, Cljfusedind
+
+Initialize initial concentrations C0 for key products (acetate, IPA, etc.)
+Define rxnsList, rxn indices, molecular weights MW
+
+# --- Main simulation loop over time k ---
+For k = 1..498:
+    Set biomass efficiencies (bm_eff_cac, bm_eff_clj) by phase
+    Read total glucose/fructose uptake from 'data(k,...)' into ut
+    Compute 'frac' = species-weighted partition factors
+    Reset ATP-use aggregators (CACfused_ATPuse, CLJfused_ATPuse)
+
+    # Per-species FBA blocks
+    For each species i in species list:
+        LOAD model.mat (fresh modelJoint)
+        Set species-specific uptake bounds (glucose/fructose) based on X(k,i) and ut
+        Zero out all other species' reactions (block bounds)
+        Set NGAM (ATPM) proportional to species abundance X(k,i)
+        Choose species-specific objective:
+            - Cacpure: 'CacpureEx_cpd11416_norm2[u]' (biomass proxy)
+            - Cljpure: 'CljpureBIOMASS_Cl_DSM_WT_46p666M1'
+            - Cacfused: 'CacfusedEx_cpd11416_norm2[u]'
+            - Cljfused: 'CljfusedBIOMASS_Cl_DSM_WT_46p666M1'
+        Optimize (maximize) to get growth FBA.f and uptake fluxes
+        Save mu(k,i), gluc_flux(k,i), fruc_flux(k,i)
+        For Cacpure, also compute max H2/CO2 export ranges
+        Accumulate hybrid ATPM (for multi-objective step later)
+
+    # Aggregate cross-feeding for hybrid states (Cac fused, Clj fused)
+    If total Cac-hybrid mu > 0:
+        Rebuild model with only Cacfused reactions active
+        Plug aggregated uptake bounds and ATPM
+        Maximize Cacfused growth; set a min growth bound (99% max)
+        Maximize ExCom_h2[u] and ExCom_co2[u], accumulate into h2_store_var, co2_store_var
+    If total Clj-hybrid mu > 0:
+        Rebuild model with only Cljfused reactions active
+        Similar steps; accumulate H2/CO2 uptake
+
+    # Community-level constraints
+    LOAD model.mat
+    Set community glucose/fructose lower bounds = sum of species uptake
+    Set organism-level uptake LBs from gluc_flux/fruc_flux
+    Enforce min growth (99% of each species' previous max)
+    Apply hybrid min growth if applicable
+    Block any species groups with zero abundance
+    Apply cross-feeding: set Clj H2/CO2 uptake lower bounds = -stored totals
+    Set NGAM (ATPM) for each active group (pure + fused)
+    Force certain exchange fluxes to match experimental rates from 'data(k,...)' (isopropanol, acetate, acetoin, ethanol, butanol, acetone)
+
+    # Multi-objective vector f (time-phase dependent weights)
+    Build f (length = number of reactions) with nonzeros on selected product exports
+    (weights vary by time window)
+
+    # Solve LP (multi-objective as weighted-sum)
+    Convert S, lb, ub to (Aeq,b,lb,ub), solve: min f·v  subject to S*v=b
+    v* = linprog(...)
+    If feasible:
+        Store product fluxes from v*(rxn_indices)
+        Integrate over dt to get cumulative concentrations (mol and g/L)
+
+# --- Plot predicted vs experimental titers ---
+Make 4 subplots (IPA, BuOH, EtOH, Acetate), experimental points + model curves
+
