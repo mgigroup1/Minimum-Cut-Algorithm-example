@@ -1,0 +1,153 @@
+How to Run
+	1	Clone/download the repository and place .m and .mat files in the same folder.
+	2	In MATLAB:
+>> (copy below lines)
+initCobraToolbox(false);
+changeCobraSolver('gurobi','LP');  % or 'glpk'
+load Cac_Clj_MuliFBA_example
+run('multi_obj_fba_coculture.m');
+
+	3	The script will:
+	◦	Preprocess OD600 and concentration data
+	◦	Estimate growth rates for Cac, Clj, and co-culture
+	◦	Integrate cell fusion ODEs
+	◦	Run multi-objective FBA per time step
+	◦	Plot predicted vs. experimental titers for key products
+Model Structure
+The simulation proceeds in six main stages:
+	1	Data Preprocessing
+	◦	Convert genome copy ratio → relative abundances
+	◦	Interpolate OD600 to uniform time grid
+	◦	Compute time-dependent growth rates (mu1, mu2, mu3)
+	2	Cell Fusion ODE Integration
+	◦	12-state ODE system models transitions between non-hybrid and hybrid cells
+	◦	Integrated in 0.1 h steps using ode45
+	3	Experimental Data Interpolation
+	◦	Interpolate extracellular metabolite concentrations
+	◦	Extract cubic polynomial coefficients for uptake/production profiles
+	4	Species & Reaction Index Mapping
+	◦	Define species list, substrate partition indices, product reaction IDs
+	◦	Map molecular weights for titer conversion
+	5	Main Simulation Loop
+	◦	For each time step:
+	▪	Run FBA for each species (pure & hybrid)
+	▪	Block irrelevant reactions to isolate species
+	▪	Set uptake bounds based on relative abundance
+	▪	Set NGAM (ATPM) proportional to abundance
+	▪	Capture growth rates, uptake rates, gas cross-feeding
+	▪	Construct and solve multi-objective LP via linprog
+	▪	Integrate product fluxes to cumulative titers
+	6	Plotting
+	◦	Generate 4 subplots comparing predicted and experimental titers for:
+	▪	Isopropanol
+	▪	Butanol
+	▪	Ethanol
+	▪	Acetate
+
+Customization
+	•	Change products: Edit rxnsList, rxn_index, MW
+	•	Change objectives:
+	◦	Single-objective: uncomment the “single objective case” block
+	◦	Multi-objective: modify weights f in time windows
+	•	Change organisms: Update species list and all related index mappings
+	•	Experimental data: Replace concentration and OD data with your own
+
+
+
+README: Pseudocode
+
+LOAD data and community model (modelJoint) from example .mat
+
+# --- Data preprocessing ---
+Compute relative abundance from genome copy ratio
+Interpolate OD600 to a regular time grid tq
+Estimate time-dependent growth rates mu1, mu2, mu3 for (Cac, Clj, Co-culture)
+Clip/limit growth rates to avoid spikes
+Initialize storage arrays
+
+# --- Cell fusion ODE integration (0.1 hr steps) ---
+Define fusion rate f and convert it to per-cell units
+For each time step i = 1..631:
+    Set initial state x0 (first step) or use previous solution
+    Define ODE g(t,x) describing:
+        - growth of non-hybrid Cac & Clj
+        - fusion terms to hybrid states
+        - cascaded state tracking (x1..x12)
+    Integrate g over [t_{i-1}, t_i] with ode45
+    Append state to fullx, time to fullt
+
+Compress (fullt, fullx) to unique time grid (pullt, pullx)
+Interpolate species states to tq → XX
+Normalize rows to fractions → X
+Reorder columns to keep "Clj pure" last (matches later indexing)
+
+# --- Concentration interpolation (experimental curves) ---
+Interpolate measured extracellular concentrations over tq → yq1..yq9
+Build piecewise polynomials (pchip) and extract cubic terms
+Assemble 'data' matrix with per-time uptake/production coefficients
+
+Define species lists and indices for partitioning substrate uptake:
+    species = {Cacpure, Cacfused, Cljfused, ..., Cljpure}
+    Cacpureind, Cljpureind, Cacfusedind, Cljfusedind
+
+Initialize initial concentrations C0 for key products (acetate, IPA, etc.)
+Define rxnsList, rxn indices, molecular weights MW
+
+# --- Main simulation loop over time k ---
+For k = 1..498:
+    Set biomass efficiencies (bm_eff_cac, bm_eff_clj) by phase
+    Read total glucose/fructose uptake from 'data(k,...)' into ut
+    Compute 'frac' = species-weighted partition factors
+    Reset ATP-use aggregators (CACfused_ATPuse, CLJfused_ATPuse)
+
+    # Per-species FBA blocks
+    For each species i in species list:
+        LOAD model.mat (fresh modelJoint)
+        Set species-specific uptake bounds (glucose/fructose) based on X(k,i) and ut
+        Zero out all other species' reactions (block bounds)
+        Set NGAM (ATPM) proportional to species abundance X(k,i)
+        Choose species-specific objective:
+            - Cacpure: 'CacpureEx_cpd11416_norm2[u]' (biomass proxy)
+            - Cljpure: 'CljpureBIOMASS_Cl_DSM_WT_46p666M1'
+            - Cacfused: 'CacfusedEx_cpd11416_norm2[u]'
+            - Cljfused: 'CljfusedBIOMASS_Cl_DSM_WT_46p666M1'
+        Optimize (maximize) to get growth FBA.f and uptake fluxes
+        Save mu(k,i), gluc_flux(k,i), fruc_flux(k,i)
+        For Cacpure, also compute max H2/CO2 export ranges
+        Accumulate hybrid ATPM (for multi-objective step later)
+
+    # Aggregate cross-feeding for hybrid states (Cac fused, Clj fused)
+    If total Cac-hybrid mu > 0:
+        Rebuild model with only Cacfused reactions active
+        Plug aggregated uptake bounds and ATPM
+        Maximize Cacfused growth; set a min growth bound (99% max)
+        Maximize ExCom_h2[u] and ExCom_co2[u], accumulate into h2_store_var, co2_store_var
+    If total Clj-hybrid mu > 0:
+        Rebuild model with only Cljfused reactions active
+        Similar steps; accumulate H2/CO2 uptake
+
+    # Community-level constraints
+    LOAD model.mat
+    Set community glucose/fructose lower bounds = sum of species uptake
+    Set organism-level uptake LBs from gluc_flux/fruc_flux
+    Enforce min growth (99% of each species' previous max)
+    Apply hybrid min growth if applicable
+    Block any species groups with zero abundance
+    Apply cross-feeding: set Clj H2/CO2 uptake lower bounds = -stored totals
+    Set NGAM (ATPM) for each active group (pure + fused)
+    Force certain exchange fluxes to match experimental rates from 'data(k,...)' (isopropanol, acetate, acetoin, ethanol, butanol, acetone)
+
+    # Multi-objective vector f (time-phase dependent weights)
+    Build f (length = number of reactions) with nonzeros on selected product exports
+    (weights vary by time window)
+
+    # Solve LP (multi-objective as weighted-sum)
+    Convert S, lb, ub to (Aeq,b,lb,ub), solve: min f·v  subject to S*v=b
+    v* = linprog(...)
+    If feasible:
+        Store product fluxes from v*(rxn_indices)
+        Integrate over dt to get cumulative concentrations (mol and g/L)
+
+# --- Plot predicted vs experimental titers ---
+Make 4 subplots (IPA, BuOH, EtOH, Acetate), experimental points + model curves
+
