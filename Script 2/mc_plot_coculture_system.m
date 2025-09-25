@@ -7,7 +7,7 @@ I=[];
 A=[];
 E=[];
 % choosing time point to generate m-c graph, as the representation of the weights within the time interval
-t=[20 100 119 150 193 250 303 313 323];
+t=[119 198 323];
 
 for tt=t
     % creating empty matrixes
@@ -193,4 +193,5 @@ A=[A,ac]; %Acetate
 E=[E,etoh]; %Ethanol
 
 end
+
 
